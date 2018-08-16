@@ -1,0 +1,8 @@
+# PhpStorm
+.idea/
+
+bin
+vendor
+API.html
+.env
+!.env.*
