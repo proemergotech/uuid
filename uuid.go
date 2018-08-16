@@ -84,7 +84,19 @@ func (u *UUID) UnmarshalJSON(b []byte) error {
 		return nil
 	}
 
-	return u.UnmarshalText(b[1 : len(b)-1])
+	str, err := strconv.Unquote(string(b))
+	if err != nil {
+		return errors.New("invalid json value for uuid (must be string or null): " + string(b))
+	}
+
+	uid, err := FromString(str)
+	if err != nil {
+		return err
+	}
+
+	*u = uid
+
+	return nil
 }
 
 func (u *UUID) UnmarshalBinary(data []byte) error {
