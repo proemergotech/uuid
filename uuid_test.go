@@ -153,6 +153,51 @@ func TestMsgPackError(t *testing.T) {
 	}
 }
 
+func TestSql(t *testing.T) {
+	for orig, exp := range tests {
+		t.Run(orig, func(t *testing.T) {
+			origUUID := UUID(orig)
+			driverValue, err := origUUID.Value()
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			b, ok := driverValue.([]byte)
+			if !ok && orig != "" {
+				t.Fatalf("value does not returned with a byte slice, returned: %T", driverValue)
+			}
+
+			var scanValue UUID
+
+			if len(b) == 0 {
+				err = scanValue.Scan(nil)
+			} else {
+				err = scanValue.Scan(b)
+			}
+
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if scanValue.String() != exp {
+				t.Fatalf("expected: %v, got: %v", exp, scanValue.String())
+			}
+		})
+	}
+}
+
+func TestSqlError(t *testing.T) {
+	for _, orig := range testErrors {
+		t.Run(orig, func(t *testing.T) {
+			var scanValue UUID
+			err := scanValue.Scan(&scanValue)
+			if err == nil {
+				t.Fatalf("expected error, but got nothing for %v", orig)
+			}
+		})
+	}
+}
+
 func TestNewV4(t *testing.T) {
 	const max = 100000
 
@@ -169,11 +214,11 @@ func TestNewV4(t *testing.T) {
 			t.Error(err)
 		}
 
-		if uuid.V4 != uid.Version()  {
+		if uuid.V4 != uid.Version() {
 			t.Errorf("invalid version in generated uuid: %s, expected: %v got: %v", u.String(), uuid.V4, uid.Version())
 		}
 
-		if uuid.VariantRFC4122 != uid.Variant()  {
+		if uuid.VariantRFC4122 != uid.Variant() {
 			t.Errorf("invalid variant in generated uuid: %s, expected: %v got: %v", u.String(), uuid.VariantRFC4122, uid.Variant())
 		}
 	}
