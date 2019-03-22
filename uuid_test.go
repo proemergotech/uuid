@@ -9,7 +9,7 @@ import (
 )
 
 var tests = map[string]string{
-	"": "",
+	"":                                     "",
 	"00000000-0000-0000-0000-000000000000": "",
 	"afe40693-8f63-4766-85f1-250a427f1db5": "afe40693-8f63-4766-85f1-250a427f1db5",
 	"AFE40693-8F63-4766-85F1-250a427F1DB5": "afe40693-8f63-4766-85f1-250a427f1db5",
@@ -21,6 +21,13 @@ var testErrors = []string{
 	"afe406938f63476685f1250a427f1db5",
 	"99999999-9999-6999-9999-250a427f1db5", // invalid version bit
 	"99999999-9999-4999-1999-250a427f1db5", // invalid variant bit
+}
+
+func TestBigPrimeLength(t *testing.T) {
+	l := len(bigPrime.Bytes())
+	if l != 14 {
+		t.Errorf("expected bigPrime to be 14 bytes long, actual length: %v", l)
+	}
 }
 
 func TestFromString(t *testing.T) {
@@ -221,5 +228,139 @@ func TestNewV4(t *testing.T) {
 		if uuid.VariantRFC4122 != uid.Variant() {
 			t.Errorf("invalid variant in generated uuid: %s, expected: %v got: %v", u.String(), uuid.VariantRFC4122, uid.Variant())
 		}
+	}
+}
+
+func TestFromHashLike(t *testing.T) {
+	for _, data := range []struct {
+		original string
+		want     UUID
+	}{
+		{
+			original: "",
+			want:     "",
+		},
+		{
+			original: "00000000000000000000000000000000",
+			want:     "",
+		},
+		{
+			original: "afe406938f63476685f1250a427f1db5",
+			want:     "afe40693-8f63-4766-85f1-250a427f1db5",
+		},
+		{
+			original: "AFE406938F63476685F1250a427F1DB5",
+			want:     "afe40693-8f63-4766-85f1-250a427f1db5",
+		},
+	} {
+		got, err := FromHashLike(data.original)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if data.want != got {
+			t.Errorf("want: %s, got: %s", data.want, got)
+		}
+	}
+}
+
+func TestFromHashLikeError(t *testing.T) {
+	for _, data := range []struct {
+		name     string
+		original string
+	}{
+		{
+			name:     "too short",
+			original: "asda",
+		},
+		{
+			name:     "too long",
+			original: "afe406938f63476685f1250a427f1db51",
+		},
+		{
+			name:     "invalid character",
+			original: "gfe406938f63476685f1250a427f1db5",
+		},
+		{
+			name:     "canonical form",
+			original: "afe40693-8f63-4766-85f1-250a427f1db5",
+		},
+		{
+			name:     "invalid version bit",
+			original: "99999999999969999999250a427f1db5",
+		},
+		{
+			name:     "invalid variant bit",
+			original: "99999999999949991999250a427f1db5",
+		},
+	} {
+		t.Run(data.name, func(t *testing.T) {
+			_, err := FromHashLike(data.original)
+			if err == nil {
+				t.Errorf("expected error, but got nothing for %v", data.original)
+			}
+		})
+	}
+}
+
+func TestHashLike(t *testing.T) {
+	for _, data := range []struct {
+		original UUID
+		want     string
+	}{
+		{
+			original: "",
+			want:     "",
+		},
+		{
+			original: "afe40693-8f63-4766-85f1-250a427f1db5",
+			want:     "afe406938f63476685f1250a427f1db5",
+		},
+	} {
+		got := data.original.HashLike()
+
+		if data.want != got {
+			t.Errorf("want: %s, got: %s", data.want, got)
+		}
+	}
+}
+
+func TestNext(t *testing.T) {
+	count := 10000
+	m := make(map[UUID]struct{}, count)
+	var err error
+
+	uid := UUID("afe40693-8f63-4766-85f1-250a427f1db5")
+	for i := 0; i < count; i++ {
+		if _, ok := m[uid]; ok {
+			t.Fatal("duplicate uuid: " + uid)
+		}
+
+		if _, err = FromString(uid.String()); err != nil {
+			t.Fatal(err)
+		}
+
+		m[uid] = struct{}{}
+		uid, err = uid.Next()
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+}
+
+func TestNextConsistent(t *testing.T) {
+	uid := UUID("afe40693-8f63-4766-85f1-250a427f1db5")
+	uuidNext1, err := uid.Next()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	uuidNext2, err := uid.Next()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if uuidNext1 != uuidNext2 {
+		t.Errorf("uuid is different, %v != %v", uuidNext1, uuidNext2)
 	}
 }
