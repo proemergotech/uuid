@@ -231,6 +231,38 @@ func TestNewV4(t *testing.T) {
 	}
 }
 
+func TestNewTimeUUID(t *testing.T) {
+	for _, timestamp := range []uint64{
+		0,
+		100,
+		1569479272,
+		9999999999,
+		99999999999999,
+		281474976710655,
+	} {
+		u := NewTime(Time(timestamp))
+
+		uid, err := uuid.FromString(u.String())
+		if err != nil {
+			t.Error(err)
+		}
+
+		if uuid.V4 != uid.Version() {
+			t.Errorf("invalid version in generated uuid: %s, expected: %v got: %v", u.String(), uuid.V4, uid.Version())
+		}
+
+		if uuid.VariantRFC4122 != uid.Variant() {
+			t.Errorf("invalid variant in generated uuid: %s, expected: %v got: %v", u.String(), uuid.VariantRFC4122, uid.Variant())
+		}
+
+		revertedTime, _ := u.TimeUUIDToTime()
+
+		if timestamp != Timestamp(revertedTime) {
+			t.Errorf("want: %v, got: %v", timestamp, revertedTime)
+		}
+	}
+}
+
 func TestFromHashLike(t *testing.T) {
 	for _, data := range []struct {
 		original string

@@ -1,6 +1,9 @@
 # Release Notes
+## 0.1.3 / 2019-09-26
+- added NewTime(time.Time) and TimeUUIDToTime() methods to support TimeUUID
+- added Timestamp() and Time() helper methods
 
-## 0.1.2 / 2018-03-22
+## 0.1.2 / 2019-03-22
 - added FromHashLike(string) and UUID.HashLike() methods
 - added Next() method
 
