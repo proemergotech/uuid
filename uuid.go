@@ -12,18 +12,24 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type UUID string
 
 const size = 16
 
+var maxTime uint64
 var bigPrime *big.Int
 
 func init() {
 	bigPrime = new(big.Int)
 	// 14 bytes long prime number
 	bigPrime.UnmarshalText([]byte("908070605040302010203040506070809"))
+
+	maxTimeUUID, _ := FromString("ffffffff-ffff-1000-a000-000000000000")
+	t, _ := maxTimeUUID.TimeUUIDToTime()
+	maxTime = Timestamp(t)
 }
 
 var (
@@ -79,8 +85,62 @@ func NewV4() UUID {
 	return UUID(string(encodeBytes(u[:])))
 }
 
+func NewTime(t time.Time) UUID {
+	u := [size]byte{}
+	if _, err := io.ReadFull(rand.Reader, u[6:]); err != nil {
+		panic(err)
+	}
+
+	ms := Timestamp(t)
+
+	if ms > maxTime {
+		panic("time too big")
+	}
+
+	const v4 byte = 4
+
+	u[0] = byte(ms >> 40)
+	u[1] = byte(ms >> 32)
+	u[2] = byte(ms >> 24)
+	u[3] = byte(ms >> 16)
+	u[4] = byte(ms >> 8)
+	u[5] = byte(ms)
+	u[6] = (u[6] & 0x0f) | (v4 << 4)
+	// set variant to RFC4122
+	u[8] = u[8]&(0xff>>2) | (0x02 << 6)
+
+	return UUID(string(encodeBytes(u[:])))
+}
+
 func (u UUID) String() string {
 	return string(u)
+}
+
+// TimeUUIDToTime converts UUID into UTC time.
+// @warning - Handle with care.
+// If you use it for single UUID you will receive random/invalid timestamp.
+func (u UUID) TimeUUIDToTime() (time.Time, error) {
+	tmp, err := hex.DecodeString(u.HashLike())
+	if err != nil {
+		return time.Time{}.UTC(), err
+	}
+
+	ms := uint64(tmp[5]) | uint64(tmp[4])<<8 |
+		uint64(tmp[3])<<16 | uint64(tmp[2])<<24 |
+		uint64(tmp[1])<<32 | uint64(tmp[0])<<40
+
+	return Time(ms), nil
+}
+
+func Timestamp(t time.Time) uint64 {
+	return uint64(t.Unix())*1000 +
+		uint64(t.Nanosecond()/int(time.Millisecond))
+}
+
+func Time(ms uint64) time.Time {
+	s := int64(ms / 1e3)
+	ns := int64((ms % 1e3) * 1e6)
+	return time.Unix(s, ns).UTC()
 }
 
 // Next generates a new uuid from the current one. The uuid returned is consistent,

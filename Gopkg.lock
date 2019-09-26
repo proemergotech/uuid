@@ -2,20 +2,27 @@
 
 
 [[projects]]
+  digest = "1:33c0c8f77a5735b1e2f2348a70dd98856ef9fc08c39e06dd605a7e2e91295faf"
   name = "github.com/gofrs/uuid"
   packages = ["."]
+  pruneopts = "UT"
   revision = "c52a24014454cb81a53adfe807a68f6a20b49d74"
   version = "v3.0.0"
 
 [[projects]]
+  digest = "1:03aa6e485e528acb119fb32901cf99582c380225fc7d5a02758e08b180cb56c3"
   name = "github.com/ugorji/go"
   packages = ["codec"]
+  pruneopts = "UT"
   revision = "b4c50a2b199d93b13dc15e78929cfb23bfdf21ab"
   version = "v1.1.1"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "64993addde599ba743ba7d21c13a74680151b2bb2f061ab9b908a0399a785a20"
+  input-imports = [
+    "github.com/gofrs/uuid",
+    "github.com/ugorji/go/codec",
+  ]
   solver-name = "gps-cdcl"
   solver-version = 1
