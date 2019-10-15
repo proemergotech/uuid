@@ -396,3 +396,48 @@ func TestNextConsistent(t *testing.T) {
 		t.Errorf("uuid is different, %v != %v", uuidNext1, uuidNext2)
 	}
 }
+
+func TestXOR(t *testing.T) {
+	a := UUID("afe40693-8f63-4766-85f1-250a427f1db5")
+	b := UUID("43ae2f25-802d-4aae-be57-b7acefe336ac")
+
+	aXb, err := a.XOR(b)
+	if err != nil {
+		t.Fatal(err)
+	}
+	bXa, err := b.XOR(a)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if aXb != bXa {
+		t.Errorf("a xor b is different from b xor a, %v != %v", aXb, bXa)
+	}
+
+	uid, err := uuid.FromString(aXb.String())
+	if err != nil {
+		t.Error(err)
+	}
+
+	if uuid.V4 != uid.Version() {
+		t.Errorf("invalid version in generated uuid (a xor b): %s, expected: %v got: %v", aXb.String(), uuid.V4, uid.Version())
+	}
+
+	if uuid.VariantRFC4122 != uid.Variant() {
+		t.Errorf("invalid variant in generated uuid (a xor b): %s, expected: %v got: %v", aXb.String(), uuid.VariantRFC4122, uid.Variant())
+	}
+
+	aXbXa, err := aXb.XOR(a)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if aXbXa != b {
+		t.Errorf("(a xor b) xor a is different from b, %v != %v", aXbXa, b)
+	}
+	aXbXb, err := aXb.XOR(b)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if aXbXb != a {
+		t.Errorf("(a xor b) xor b is different from a, %v != %v", aXbXb, a)
+	}
+}
