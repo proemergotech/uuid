@@ -1,4 +1,8 @@
 # Release Notes
+## 0.1.4 / 2019-10-15
+- added XOR(UUID) method that calculates the bitwise XOR result of two UUIDs,
+making a new, valid UUID from them
+
 ## 0.1.3 / 2019-09-26
 - added NewTime(time.Time) and TimeUUIDToTime() methods to support TimeUUID
 - added Timestamp() and Time() helper methods
