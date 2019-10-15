@@ -179,6 +179,38 @@ func (u UUID) Next() (UUID, error) {
 	return UUID(string(encodeBytes(newB))), nil
 }
 
+func (u UUID) XOR(v UUID) (UUID, error) {
+	if u == Nil || v == Nil {
+		return Nil, nil
+	}
+
+	// remove dashes
+	hash1 := u.HashLike()
+	hash2 := v.HashLike()
+
+	b1, err := hex.DecodeString(hash1)
+	if err != nil {
+		return Nil, errors.New("invalid left side parameter: " + u.String())
+	}
+	b2, err := hex.DecodeString(hash2)
+	if err != nil {
+		return Nil, errors.New("invalid right side parameter: " + v.String())
+	}
+
+	arr := make([]byte, 16)
+	for i := range b1 {
+		arr[i] = b1[i] ^ b2[i]
+	}
+
+	// set version to v4
+	const v4 byte = 4
+	arr[6] = (arr[6] & 0x0f) | (v4 << 4)
+	// set variant to RFC4122
+	arr[8] = arr[8]&(0xff>>2) | (0x02 << 6)
+
+	return UUID(string(encodeBytes(arr))), nil
+}
+
 // HashLike returns the uuid without dashes, eg: afe406938f63476685f1250a427f1db5
 func (u UUID) HashLike() string {
 	if u == Nil {
