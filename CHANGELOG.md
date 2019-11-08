@@ -1,4 +1,9 @@
 # Release Notes
+
+## 0.2.0 / 2019-11-08
+- update to use gomods
+- update ugorji library for go modules compatibility
+
 ## 0.1.4 / 2019-10-15
 - added XOR(UUID) method that calculates the bitwise XOR result of two UUIDs,
 making a new, valid UUID from them

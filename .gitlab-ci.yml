@@ -8,29 +8,9 @@ stages:
 
 variables:
   GO_SRC: src/gitlab.com/$CI_PROJECT_PATH
-  DEP_VERSION: 0.5.4
-
-.service-env-template:
-  before_script: &service-env-prepare
-    # install build tools
-    - wget -O $GOPATH/bin/dep https://github.com/golang/dep/releases/download/v${DEP_VERSION}/dep-linux-amd64 && chmod +x $GOPATH/bin/dep
-
-    # ssh access to private git repos
-    - eval $(ssh-agent -s)
-    - echo "${DEPLOY_SSH_PRIVATE_KEY}" | ssh-add -
-    - mkdir ~/.ssh && touch ~/.ssh/known_hosts
-    - ssh-keyscan -t rsa gitlab.com >> ~/.ssh/known_hosts
-
-    # move to proper directory (needed by go)
-    - FULL_GO_SRC=$GOPATH/${GO_SRC}
-    - mkdir -p $FULL_GO_SRC && mv ./* $FULL_GO_SRC && cd $FULL_GO_SRC
-
-    # install dependencies
-    - dep ensure -vendor-only
 
 test:
-  before_script: *service-env-prepare
   stage: test
-  image: golang:1.12.7
+  image: golang:1.13
   script:
   - go test -count=1 -v ./...
