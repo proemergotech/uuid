@@ -1,3 +1,1 @@
-# UUID
-
-UUID package for go, handling uuid as string. Validates during json, text and binary unmarshalling. Only generates v4. Validation accepts all versions as valid uuid.
+[![Go Reference](https://pkg.go.dev/badge/github.com/proemergotech/uuid.svg)](https://pkg.go.dev/github.com/proemergotech/uuid)

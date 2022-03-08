@@ -1,0 +1,38 @@
+name: CI
+on: [push, workflow_dispatch]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container: golang:1.17
+    steps:
+      - uses: actions/checkout@v2
+
+      - run: go test -mod=readonly -race -v ./...
+
+  verify:
+    if: github.ref_type == 'branch' && github.ref_name != 'master'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        
+      - run: ./verify.sh
+          
+  build:
+    runs-on: ubuntu-latest
+    container: golang:1.17
+    steps:
+      - uses: actions/checkout@v2
+        
+      - run: go build -a -mod=readonly -o /dev/null ./...
+        
+  lint:
+    runs-on: ubuntu-latest
+    container: golang:1.17
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: golangci/golangci-lint-action@v2
+        with:
+          version: v1.44.2
+          args: -c .golangci.yml

@@ -1,6 +1,6 @@
 module github.com/proemergotech/uuid
 
-go 1.15
+go 1.17
 
 require (
 	github.com/gofrs/uuid v3.0.0+incompatible

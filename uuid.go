@@ -25,7 +25,7 @@ var bigPrime *big.Int
 func init() {
 	bigPrime = new(big.Int)
 	// 14 bytes long prime number
-	bigPrime.UnmarshalText([]byte("908070605040302010203040506070809"))
+	_ = bigPrime.UnmarshalText([]byte("908070605040302010203040506070809"))
 
 	maxTimeUUID, _ := FromString("ffffffff-ffff-1000-a000-000000000000")
 	t, _ := maxTimeUUID.TimeUUIDToTime()
