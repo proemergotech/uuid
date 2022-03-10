@@ -1,5 +1,8 @@
 # Release Notes
 
+## v1.1.1 / 2022-03-09
+- update ugorji/go/codec version
+
 ## v1.1.0 / 2022-03-08
 - sync with gitlab
 - update go version
