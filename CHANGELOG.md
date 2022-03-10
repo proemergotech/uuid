@@ -1,5 +1,8 @@
 # Release Notes
 
+## v1.1.2 / 2022-03-10
+- downgrade ugorji, see: https://github.com/ugorji/go/issues/369
+
 ## v1.1.1 / 2022-03-09
 - update ugorji/go/codec version
 
